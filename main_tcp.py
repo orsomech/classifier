@@ -9,7 +9,9 @@ model = model_provider.load()
 @timeit
 def precess_request(buffer):
     sample = np.ndarray(buffer=buffer, shape=(1, 2, 128, 1), dtype=np.float64)
-    return model.predict(sample)
+    prediction = model.predict(sample)
+    #print(prediction)
+    return prediction
 
 
 def start_server():

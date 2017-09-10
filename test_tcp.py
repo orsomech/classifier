@@ -15,6 +15,7 @@ def send_requests(socket, count, sample):
     bytes_sample = np.ndarray.tobytes(sample)
     for i in range(count):
         socket.sendall(bytes_sample)
+        socket.recv(1024)
 
 # Select specific sample
 index = 0  # index can be in a range: [0 --- len(x_test)-1]
@@ -27,7 +28,8 @@ port = 12345                 # Reserve a port for your service.
 
 s.connect((host, port))
 
-send_requests(s, 1000, samples_to_classify)
+send_requests(s, 40, samples_to_classify)
 
 s.shutdown(socket.SHUT_WR)
 s.close()
+
