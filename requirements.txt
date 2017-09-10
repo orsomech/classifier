@@ -1,0 +1,5 @@
+pandas
+numpy
+keras
+Flask == 0.12.2
+requests
