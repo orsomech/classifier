@@ -1,5 +1,5 @@
 from keras.models import model_from_json
-
+print('TensorFlow initiated')
 
 def load():
     with open('model/model.json', 'r') as model_json:

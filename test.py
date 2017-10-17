@@ -42,7 +42,7 @@ if __name__ == '__main__':
     f = TemporaryFile()
     np.savez(f, x=samples_to_classify)
     f.seek(0)
-    npz = np.load(f)
+    npz = np.lo ad(f)
     
     print(npz['x'])
     print(samples_to_classify)

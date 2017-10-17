@@ -7,7 +7,7 @@ model = model_provider.load()
 
 
 @timeit
-def precess_request(buffer):
+def process_request(buffer):
     sample = np.ndarray(buffer=buffer, shape=(1, 2, 128, 1), dtype=np.float64)
     prediction = model.predict(sample)
     #print(prediction)
@@ -17,7 +17,7 @@ def precess_request(buffer):
 def start_server():
     sckt = socket.socket()
     host = socket.gethostname()
-    port = 12345
+    port = 12346
     sckt.bind((host, port))
     sckt.listen(5)
     client_socket, client_address = sckt.accept()
@@ -28,7 +28,7 @@ def start_server():
         if not receiving_buffer:
             break
 
-        prediction = precess_request(receiving_buffer)
+        prediction = process_request(receiving_buffer)
         client_socket.send(prediction)
 
     client_socket.close()
