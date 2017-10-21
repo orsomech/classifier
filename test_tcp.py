@@ -61,6 +61,7 @@ def receive_response_time(scket, seconds):
         while (time.time() - time_start) < seconds:
             response_count += 1
             scket.recv(1024)
+        scket.sendall(None)
     #except Exception as e:
     #    print(e)
     finally:

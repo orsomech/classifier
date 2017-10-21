@@ -2,7 +2,7 @@ from providers import model_provider
 from utils.timeit import timeit
 import multiprocessing as mp
 from multiprocessing import Process, Queue, JoinableQueue
-from entities.consumer import Consumer
+from entities.classifier import Classifier
 import os
 import numpy as np
 import socket
@@ -45,7 +45,7 @@ def process_requests(samples, client):
 
 def start_server(samples, client_socket):
     for i in range(processes_count):
-        c = Consumer(samples, client_socket)
+        c = Classifier(samples, client_socket)
         c.start()
         '''
         process = Process(target=process_requests, args=(samples, predictions))

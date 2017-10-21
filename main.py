@@ -1,35 +1,68 @@
-import numpy as np
-from flask import Flask, request
-from utils.timeit import timeit
 from providers import model_provider
-import io
+from utils.timeit import timeit
+import multiprocessing as mp
+from multiprocessing import Process, Queue, JoinableQueue
+from entities.classifier import Classifier
+import os
+import numpy as np
+import socket
+import datetime
 
-model = model_provider.load()
-app = Flask('Classifier')
 
-print('classifier ready')
+samples = Queue()
 
 
-@app.route('/classify')
-@timeit
-def classify():
-    print('classify')
-    #sample = np.fromstring(request.form['sample'])
-    #print(request.form['sample'])
-    #f = io.StringIO(request.form['sample'])
-    #f.seek(0)
-    #sample = np.load(f)
-    #print('before {0}'.format(sample))
-    p = request.form['sample']
-    print(p)
-    sample = np.fromstring(request.form['sample'], dtype=np.float64).reshape((1, 2, 128, 1))
+def kill_all_classifiers(classifiers):
+    for i in range(len(classifiers)):
+        samples.put(None)
 
-    #sample = np.swapaxes(sample, 2, 3)
-    #sample = np.swapaxes(sample, 1, 2)
-    #sample = np.swapaxes(sample, 0, 1)
 
-    return model.predict(sample)
+def report_predictions(predictions, client):
+    while True:
+        try:
+            prediction = predictions.get()
+
+            if prediction is None:
+                break
+
+            client.sendall(prediction)
+        except Exception as e:
+            print(e)
+
+
+def lister_to_incoming_requests():
+    classifiers = []
+    server_socker = socket.socket()
+    host = socket.gethostname()
+    port = 12345
+    server_socker.bind((host, port))
+    server_socker.listen(5)
+    client_socket, client_address = server_socker.accept()
+
+    try:
+        print('Parent id: ', os.getpid())
+
+        for i in range(os.cpu_count()):
+            classifier = Classifier(model_provider, samples, client_socket)
+            classifier.daemon = True
+            classifier.start()
+            classifiers.append(classifier)
+
+        print('Ready')
+        while True:
+            receiving_buffer = client_socket.recv(2048)
+            if receiving_buffer == b'':
+                break
+
+            samples.put(receiving_buffer)
+    except Exception as e:
+        print(e)
+    finally:
+        print('close socket ', datetime.datetime.now().time())
+        client_socket.close()
+        kill_all_classifiers(classifiers)
+        print('done')
 
 
 if __name__ == '__main__':
-    i = 0
+    lister_to_incoming_requests()
